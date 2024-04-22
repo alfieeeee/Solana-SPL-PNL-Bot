@@ -1,12 +1,36 @@
-const holderAddress = "GwedUGG4cePev42bYsuQgdvVre5pgsuuRBZWf2Eu2ESu"
-const tokenAddress = "2nhjjqSkA8FYCUdJvQhYjbtZdPjZbNo8VtNKTkJ3hncb"
+const holderAddress = "DSL56opnnHii1RyGHg8Fcb1abPzDyTvkphrRXJNam33t"
+const tokenAddress = "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr"
 const txPages = 1
-const batchCount = 1000
+const batchCount = 50
 
 const rpc = "https://newest-quiet-dawn.solana-mainnet.quiknode.pro/3c56a83d359e898ebc6bbdae0ba05fc17536c2ce"
 
-const programIDOne = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
-const programIDTwo = "META4s4fSmpkTbZoUsgC1oBnWB31vQcmnN8giPw51Zu"
+async function getTokenAccount(holderAddress, tokenAddress) {
+    const tokenAccountResponse = await fetch(rpc, {
+        method: "POST",
+        body: JSON.stringify({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getTokenAccountsByOwner",
+            "params": [
+                holderAddress,
+                {
+                    "mint": tokenAddress
+                },
+                {
+                    "encoding": "jsonParsed"
+                }
+            ]
+            })
+    })
+    const tokenAccountData = await tokenAccountResponse.json()
+    if (tokenAccountData.result.value[0]) {
+        console.log(tokenAccountData.result.value[0].pubkey)
+        return tokenAccountData.result.value[0].pubkey
+    } else {
+        return null
+    }
+}
 
 async function getTransactions(holderAddress, txPages) {
     let txArray = []
@@ -64,8 +88,15 @@ async function getTransactionDetails(transactions, batchCount) {
     const batches = []
     const promises = []
 
-    for (let i = 0; i < transactions.length; i += (transactions.length / batchCount)) {
-        batches.push(transactions.slice(i, i + transactions.length / batchCount))
+    console.log(transactions.length)
+
+    let realBatchCount = batchCount
+    if (transactions.length < batchCount) {
+        realBatchCount =transactions.length
+    }
+
+    for (let i = 0; i < transactions.length; i += (transactions.length / realBatchCount)) {
+        batches.push(transactions.slice(i, i + transactions.length / realBatchCount))
     }
 
     for (const batch of batches) {
@@ -194,7 +225,16 @@ async function getTokenPnl(tokenTrades) {
 async function main(holderAddress, tokenAddress, txPages, batchCount) {
     console.time("Pnl Time Taken")
 
-    const transactions = await getTransactions(holderAddress, txPages)
+    const tokenAccount = await getTokenAccount(holderAddress, tokenAddress)
+
+    let transactions = []
+    if (tokenAccount !== null) {
+        console.log("token account")
+        transactions = await getTransactions(tokenAccount, txPages)
+    } else {
+        console.log("wallet address")
+        transactions = await getTransactions(holderAddress, txPages)
+    }
     //console.log(transactions)
 
     const transactionDetails = await getTransactionDetails(transactions, batchCount)
