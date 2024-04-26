@@ -1,9 +1,9 @@
-const holderAddress = "DSL56opnnHii1RyGHg8Fcb1abPzDyTvkphrRXJNam33t"
-const tokenAddress = "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr"
-const txPages = 1
-const batchCount = 50
+const holderAddress = "" // Solana wallet address.
+const tokenAddress = "" // Solana token address.
+const txPages = 1 // Amount of "pages" of transactions to get as limit is 1000 tx per page. Please note that the higher the number, the longer the script takes to run. Example: txPages = 1 (up to 1000 txs) Example2: txpages = 5 (up to 5000 txs).
+const batchCount = 30 // How many batches the total amount of transcations should be split into. Please note that the higher the number, the quicker the script takes to run, but may also have more RPC issues.
 
-const rpc = "https://newest-quiet-dawn.solana-mainnet.quiknode.pro/3c56a83d359e898ebc6bbdae0ba05fc17536c2ce"
+const rpc = "" // Solana RPC. Please note that your RPC performance will affect script speeds.
 
 async function getTokenAccount(holderAddress, tokenAddress) {
     const tokenAccountResponse = await fetch(rpc, {
@@ -53,10 +53,10 @@ async function getTransactions(holderAddress, txPages) {
                   })
             })
             const holderTxData = await holderTxResponse.json()
-            txLast = holderTxData.result.slice(-1)[0].signature
             for (let j = 0; j < holderTxData.result.length; j++) {
                 txArray.push(holderTxData.result[j].signature)
             }
+            txLast = await holderTxData.result.slice(-1)[0].signature
         } else {
             const holderTxResponse = await fetch(rpc, {
                 method: "POST",
@@ -75,10 +75,13 @@ async function getTransactions(holderAddress, txPages) {
                   })
             })
             const holderTxData = await holderTxResponse.json()
-            txLast = holderTxData.result.slice(-1)[0].signature
             for (let j = 0; j < holderTxData.result.length; j++) {
                 txArray.push(holderTxData.result[j].signature)
             }
+            if (holderTxData.result.length < 1000) {
+                break;
+            }
+            txLast = await holderTxData.result.slice(-1)[0].signature
         }
     }
     return txArray
