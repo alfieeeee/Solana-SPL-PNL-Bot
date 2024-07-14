@@ -13,3 +13,5 @@ The following script:
  - Allows you to check the amount of the SPL tokens still held.
 
 Example CLI usage: `node index.js`
+
+(Pushed change to use SOL instead of WSOL).
