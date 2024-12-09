@@ -153,26 +153,26 @@ async function getTokenTrades(filteredTransactions, tokenAddress, holderAddress)
         let preTokenAmount = 0
         let preSolAmount = 0
         for (const preBalance of preBalances) {
-            if (preBalance.mint === tokenAddress && preBalance.owner === walletAddress) {
+            if (preBalance.mint === tokenAddress && preBalance.owner === holderAddress) {
                 preTokenAmount += preBalance.uiTokenAmount.uiAmount
             }
             if (preBalance.mint === solAddress) {
                 //preSolAmount += preBalance.uiTokenAmount.uiAmount
             }
         }
-        preSolAmount -= (transactions[i].result.meta.preBalances[transactions[i].result.transaction.message.accountKeys.findIndex((account) => account.pubkey === walletAddress)] / 1000000000)
+        preSolAmount -= (transactions[i].result.meta.preBalances[transactions[i].result.transaction.message.accountKeys.findIndex((account) => account.pubkey === holderAddress)] / 1000000000)
 
         let postTokenAmount = 0
         let postSolAmount = 0
         for (const postBalance of postBalances) {
-            if (postBalance.mint === tokenAddress && postBalance.owner === walletAddress) {
+            if (postBalance.mint === tokenAddress && postBalance.owner === holderAddress) {
                 postTokenAmount += postBalance.uiTokenAmount.uiAmount
             }
             if (postBalance.mint === solAddress) {
                 //postSolAmount += postBalance.uiTokenAmount.uiAmount
             }
         }
-        postSolAmount -= (transactions[i].result.meta.postBalances[transactions[i].result.transaction.message.accountKeys.findIndex((account) => account.pubkey === walletAddress)] / 1000000000)
+        postSolAmount -= (transactions[i].result.meta.postBalances[transactions[i].result.transaction.message.accountKeys.findIndex((account) => account.pubkey === holderAddress)] / 1000000000)
 
         let diffTokenAmount = postTokenAmount - preTokenAmount
         let diffSolAmount = preSolAmount - postSolAmount
